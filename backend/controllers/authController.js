@@ -1,12 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 import bcrypt from 'bcryptjs';
-
-const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, {
-    expiresIn: '1d',
-  });
-};
+import { generateTokens } from '../lib/utils/generateTokens.js';
 
 export const signup = async (req, res) => {
   try {
@@ -33,7 +28,7 @@ export const signup = async (req, res) => {
     });
 
     if (newUser) {
-      const token = generateToken(newUser._id);
+      const token = generateTokens(newUser._id);
       res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
       res.status(201).json({
         _id: newUser._id,
