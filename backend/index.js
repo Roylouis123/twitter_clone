@@ -14,7 +14,7 @@ app.use(cookieParser());
 
 
 app.use("/api/auth", authRoutes);
-// app.use("/api/user", userRouter);
+app.use("/api/user", userRouter);
 
 app.listen(4000, () => {
   connectMongoose();

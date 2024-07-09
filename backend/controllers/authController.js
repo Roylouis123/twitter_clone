@@ -53,9 +53,13 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const token = generateToken(user._id);
-      res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+    console.log(email,user)
+
+   const passCheck =await bcrypt.compare(password, user.password);
+
+
+    if (user && (passCheck)) {
+      generateTokens(user._id,res);
       res.json({
         _id: user._id,
         username: user.username,
@@ -70,6 +74,7 @@ export const login = async (req, res) => {
       res.status(401).json({ message: "Invalid email or password" });
     }
   } catch (error) {
+    console.log(error)
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -84,6 +89,7 @@ export const checkAuth = async (req, res, next) => {
     const user = await User.findById(req.user._id).select("-password");
     res.status(200).json(user);
   } catch (error) {
+    console.log(error)
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
