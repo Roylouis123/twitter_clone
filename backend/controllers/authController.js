@@ -11,11 +11,19 @@ export const signup = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ username });
+		if (existingUser) {
+			return res.status(400).json({ error: "Username is already taken" });
+		}
 
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
-    }
+    if (password.length < 6) {
+			return res.status(400).json({ error: "Password must be at least 6 characters long" });
+		}
+
+		const existingEmail = await User.findOne({ email });
+		if (existingEmail) {
+			return res.status(400).json({ error: "Email is already taken" });
+		}
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -28,8 +36,10 @@ export const signup = async (req, res) => {
     });
 
     if (newUser) {
-      const token = generateTokens(newUser._id);
-      res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+      generateTokens(newUser._id, res);
+
+      await newUser.save();
+      
       res.status(201).json({
         _id: newUser._id,
         username: newUser.username,
@@ -44,40 +54,39 @@ export const signup = async (req, res) => {
       res.status(500).json({ message: "Internal Server Error" });
     }
   } catch (error) {
+    console.log(error,"Error in signup controller")
     res.status(500).json({ message: "Server error" });
   }
 };
 
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const { username, password } = req.body;
+		const userAcc = await User.findOne({ username });
+		const isPasswordCorrect = await bcrypt.compare(password, userAcc?.password || "");
 
-    console.log(email,user)
+		if (!userAcc || !isPasswordCorrect) {
+			return res.status(400).json({ error: "Invalid username or password" });
+		}
 
-   const passCheck =await bcrypt.compare(password, user.password);
+		generateTokens(userAcc._id, res);
 
+		res.status(200).json({
+			_id: userAcc._id,
+			fullName: userAcc.fullName,
+			username: userAcc.username,
+			email: userAcc.email,
+			followers: userAcc.followers,
+			following: userAcc.following,
+			profileImg: userAcc.profileImg,
+			coverImg: userAcc.coverImg,
+		});
 
-    if (user && (passCheck)) {
-      generateTokens(user._id,res);
-      res.json({
-        _id: user._id,
-        username: user.username,
-        fullName: user.fullName,
-        email: user.email,
-        followers: user.followers,
-        following: user.following,
-        coverImg: user.coverImg,
-        profileImg: user.profileImg
-      });
-    } else {
-      res.status(401).json({ message: "Invalid email or password" });
-    }
   } catch (error) {
-    console.log(error)
-    res.status(500).json({ message: "Server error" });
-  }
-};
+		console.log("Error in login controller", error.message);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+}
 
 export const logout = (req, res) => {
   res.cookie('jwt', '', { maxAge: 1 });

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { MdOutlineMail } from "react-icons/md";
 import { MdPassword } from "react-icons/md";
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import XSvg from "../../../components/svg";
 
@@ -11,45 +10,42 @@ const Login = () => {
 		username: "",
 		password: "",
 	});
+	const queryClient = useQueryClient();
 
-	const isPending = false;
-	const isError = false;
-	// const queryClient = useQueryClient();
+	const {
+		mutate: loginMutation,
+		isPending,
+		isError,
+		error,
+	} = useMutation({
+		mutationFn: async ({ username, password }) => {
+			try {
+				const res = await fetch("/api/auth/login", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ username, password }),
+				});
 
-	// const {
-	// 	mutate: loginMutation,
-	// 	isPending,
-	// 	isError,
-	// 	error,
-	// } = useMutation({
-	// 	mutationFn: async ({ username, password }) => {
-	// 		try {
-	// 			const res = await fetch("/api/auth/login", {
-	// 				method: "POST",
-	// 				headers: {
-	// 					"Content-Type": "application/json",
-	// 				},
-	// 				body: JSON.stringify({ username, password }),
-	// 			});
+				const data = await res.json();
 
-	// 			const data = await res.json();
-
-	// 			if (!res.ok) {
-	// 				throw new Error(data.error || "Something went wrong");
-	// 			}
-	// 		} catch (error) {
-	// 			throw new Error(error);
-	// 		}
-	// 	},
-	// 	onSuccess: () => {
-	// 		// refetch the authUser
-	// 		queryClient.invalidateQueries({ queryKey: ["authUser"] });
-	// 	},
-	// });
+				if (!res.ok) {
+					throw new Error(data.error || "Something went wrong");
+				}
+			} catch (error) {
+				throw new Error(error);
+			}
+		},
+		onSuccess: () => {
+			// refetch the authUser
+			queryClient.invalidateQueries({ queryKey: ["authUser"] });
+		},
+	});
 
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		// loginMutation(formData);
+		loginMutation(formData);
 	};
 
 	const handleInputChange = (e) => {
@@ -103,4 +99,5 @@ const Login = () => {
 		</div>
 	);
 };
+
 export default Login;

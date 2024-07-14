@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import userRouter from "./routes/userRoutes.js";
 import postRouter from "./routes/postRoutes.js";
 import { v2 as cloudinary } from 'cloudinary';
+import cors from "cors";
 
  // Configuration
  cloudinary.config({ 
@@ -19,6 +20,10 @@ dotenv.config();
 
 const app = express();
 
+// apply cors
+app.use(cors());
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -28,7 +33,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRouter);
 app.use("/api/post", postRouter);
 
-app.listen(4000, () => {
+app.listen(5000, (res,err) => {
   connectMongoose();
-  console.log("server running on port 4000");
+  console.log("server running on port 5000",res);
 });
