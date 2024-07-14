@@ -4,9 +4,9 @@ import { FaArrowLeft } from "react-icons/fa6";
 import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
-import ProfileHeaderSkeleton from "../skeleton/ProfileHeaderSkeleton";
+import ProfileHeaderSkeleton from "../../components/skeleton/ProfileHeaderSkeleton";
 import EditProfileModal from "./editProfileModal";
-import Post from "../post/post";
+import Post from "../../components/post/post";
 import { POSTS } from "../../utils/data";
 
 

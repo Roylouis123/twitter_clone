@@ -1,5 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
-import user from "../models/userModel.js";
+import User from "../models/userModel.js";
 import Post from "../models/postModel.js";
 import Notification from "../models/notificationModel.js";
 
@@ -9,7 +9,7 @@ export const createNewPost = async (req, res) => {
 		let { img } = req.body;
 		const userId = req.user._id.toString();
 
-		const currentUset = await user.findById(userId);
+		const currentUset = await User.findById(userId);
 		if (!currentUset) return res.status(404).json({ message: "User not found" });
 
 		if (!text && !img) {
@@ -103,14 +103,14 @@ export const likeUnlikePost = async (req, res) => {
 		if (userLikedPost) {
 			// Unlike post
 			await Post.updateOne({ _id: postId }, { $pull: { likes: userId } });
-			await user.updateOne({ _id: userId }, { $pull: { likedPosts: postId } });
+			await User.updateOne({ _id: userId }, { $pull: { likedPosts: postId } });
 
 			const updatedLikes = post.likes.filter((id) => id.toString() !== userId.toString());
 			res.status(200).json(updatedLikes);
 		} else {
 			// Like post
 			post.likes.push(userId);
-			await user.updateOne({ _id: userId }, { $push: { likedPosts: postId } });
+			await User.updateOne({ _id: userId }, { $push: { likedPosts: postId } });
 			await post.save();
 
 			const notification = new Notification({
@@ -158,7 +158,7 @@ export const getLikedPosts = async (req, res) => {
 	const userId = req.params.id;
 
 	try {
-		const user = await user.findById(userId);
+		const user = await User.findById(userId);
 		if (!user) return res.status(404).json({ error: "User not found" });
 
 		const likedPosts = await Post.find({ _id: { $in: user.likedPosts } })
@@ -180,8 +180,9 @@ export const getLikedPosts = async (req, res) => {
 
 export const getFollowingPosts = async (req, res) => {
 	try {
+		console.log(req.user,"------------------")
 		const userId = req.user._id;
-		const user = await user.findById(userId);
+		const user = await User.findById(userId);
 		if (!user) return res.status(404).json({ error: "User not found" });
 
 		const following = user.following;

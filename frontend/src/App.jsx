@@ -1,12 +1,12 @@
 import "./App.css";
 import { Navigate, Route, Routes } from "react-router-dom";
 import SignUp from "./pages/auth/signUp";
-import Home from "./components/home";
+import Home from "./pages/home/index.jsx";
 import Login from "./pages/auth/login";
 import Sidebar from "./components/sideBar";
 import RightPanel from "./components/rightPanel";
-import Notification from "./components/notification";
-import Profile from "./components/Profie.jsx";
+import Notification from "./pages/notification/index.jsx";
+import Profile from "./pages/Profie.jsx/index.jsx";
 import { Toaster } from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "./utils/loadSpinner.jsx";
