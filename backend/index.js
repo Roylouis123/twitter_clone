@@ -5,8 +5,11 @@ import connectMongoose from "./db/connectMongo.js";
 import cookieParser from "cookie-parser";
 import userRouter from "./routes/userRoutes.js";
 import postRouter from "./routes/postRoutes.js";
+import notification from "./routes/notification.js";
 import { v2 as cloudinary } from 'cloudinary';
 import cors from "cors";
+
+dotenv.config();
 
  // Configuration
  cloudinary.config({ 
@@ -14,9 +17,6 @@ import cors from "cors";
   api_key: process.env.CLOUDINARY_API_KEY, 
   api_secret: process.env.CLOUDINARY_SECRET_API
 });
-
-
-dotenv.config();
 
 const app = express();
 
@@ -32,6 +32,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRouter);
 app.use("/api/post", postRouter);
+app.use("/api/notifications", notification);
 
 app.listen(5000, (res,err) => {
   connectMongoose();

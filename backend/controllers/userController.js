@@ -1,11 +1,11 @@
 import Notification from "../models/notificationModel.js";
-import user from "../models/userModel.js";
+import User from "../models/userModel.js";
 import { v2 as cloudinary } from "cloudinary";
 
 export const getUserProfile = async (req, res) => {
-   const {username} = req.params;
+   const {id:username} = req.params;
    try {
-    const user = await user.findOne({username}).select("-password");
+    const user = await User.findOne({username}).select("-password");
     if(!user) return res.status(404).json({message: "User not found"});
     res.status(200).json(user);
    } catch (error) {
@@ -19,8 +19,8 @@ export const followUnfollowUser = async (req, res) => {
 
 		console.log(req.user)
 		const { id } = req.params;
-		const userToModify = await user.findById(id);
-		const currentUser = await user.findById(req.user._id);
+		const userToModify = await User.findById(id);
+		const currentUser = await User.findById(req.user._id);
 
 		if (id === req.user._id.toString()) {
 			return res.status(400).json({ error: "You can't follow/unfollow yourself" });
@@ -32,14 +32,14 @@ export const followUnfollowUser = async (req, res) => {
 
 		if (isFollowing) {
 			// Unfollow the user
-			await user.findByIdAndUpdate(id, { $pull: { followers: req.user._id } });
-			await user.findByIdAndUpdate(req.user._id, { $pull: { following: id } });
+			await User.findByIdAndUpdate(id, { $pull: { followers: req.user._id } });
+			await User.findByIdAndUpdate(req.user._id, { $pull: { following: id } });
 
 			res.status(200).json({ message: "User unfollowed successfully" });
 		} else {
 			// Follow the user
-			await user.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
-			await user.findByIdAndUpdate(req.user._id, { $push: { following: id } });
+			await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
+			await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
 			// Send notification to the user
 			const userToNotify = new Notification({
 				type: "follow",
@@ -65,9 +65,9 @@ export const followUnfollowUser = async (req, res) => {
 		try {
 			const userId = req.user._id;
 	
-			const usersFollowedByMe = await user.findById(userId).select("following");
+			const usersFollowedByMe = await User.findById(userId).select("following");
 	
-			const users = await user.aggregate([
+			const users = await User.aggregate([
 				{
 					$match: {
 						_id: { $ne: userId },
@@ -118,7 +118,6 @@ export const followUnfollowUser = async (req, res) => {
 	
 			if (profileImg) {
 				if (user.profileImg) {
-					// https://res.cloudinary.com/dyfqon1v6/image/upload/v1712997552/zmxorcxexpdbh8r0bkjb.png
 					await cloudinary.uploader.destroy(user.profileImg.split("/").pop().split(".")[0]);
 				}
 	
