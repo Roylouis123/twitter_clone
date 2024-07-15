@@ -8,6 +8,7 @@ import postRouter from "./routes/postRoutes.js";
 import notification from "./routes/notification.js";
 import { v2 as cloudinary } from 'cloudinary';
 import cors from "cors";
+import path from "path";
 
 dotenv.config();
 
@@ -17,6 +18,8 @@ dotenv.config();
   api_key: process.env.CLOUDINARY_API_KEY, 
   api_secret: process.env.CLOUDINARY_SECRET_API
 });
+
+const __dirname = path.resolve();
 
 const app = express();
 
@@ -33,6 +36,13 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRouter);
 app.use("/api/post", postRouter);
 app.use("/api/notifications", notification);
+
+if(process.env.NODE_ENV === "production"){
+  app.use(express.static(path.join(__dirname, "/frontend/dist")));
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "frontend", "build", "index.html"));
+  });
+}
 
 app.listen(5000, (res,err) => {
   connectMongoose();
